@@ -22,10 +22,11 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                 "Username '" + request.username() + "' ist bereits vergeben.");
         }
-        final User user = User.builder().username(request.username()).passwordHash(passwordEncoder.encode(request.password()))
-            .firstName(request.firstName()).lastName(request.lastName())
-            .role(request.role() != null ? request.role() : "DEVELOPER").vcsKey(request.vcsKey())
-            .redmineKey(request.redmineKey()).avatarUrl(request.avatarUrl()).build();
+        final User user =
+            User.builder().username(request.username()).passwordHash(passwordEncoder.encode(request.password()))
+                .firstName(request.firstname()).lastName(request.lastName())
+                .role(request.role() != null ? request.role() : "DEVELOPER").vcsKey(request.vcsKey())
+                .redmineKey(request.redmineKey()).avatarUrl(request.avatarUrl()).build();
 
         final User savedUser = userRepository.save(user);
         return UserDTO.fromEntity(savedUser);

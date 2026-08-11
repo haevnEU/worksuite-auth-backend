@@ -1,5 +1,4 @@
 package de.haevn.authentification;
-public record AuthResponse(
-    String token,
-    UserDTO user
-) {}
+
+public record AuthResponse(String token, UserDTO user) {
+}
