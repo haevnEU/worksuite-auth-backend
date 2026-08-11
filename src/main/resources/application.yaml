@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: authentification
+
+jwt:
+  secret: ${JWT_SECRET}
