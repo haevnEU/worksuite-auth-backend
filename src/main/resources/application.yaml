@@ -1,0 +1,27 @@
+server:
+  forward-headers-strategy: framework
+
+spring:
+  application:
+    name: authentification
+  jpa:
+    hibernate:
+      ddl-auto: none
+    generate-ddl: false
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    url: /v3/api-docs
+
+jwt:
+  secret: ${JWT_SECRET}
