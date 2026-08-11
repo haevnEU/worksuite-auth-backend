@@ -24,7 +24,7 @@ public class UserService {
         }
         final User user = User.builder().username(request.username()).passwordHash(passwordEncoder.encode(request.password()))
             .firstName(request.firstName()).lastName(request.lastName())
-            .role(request.role() != null ? request.role() : "DEVELOPER").gitlabKey(request.gitlabKey())
+            .role(request.role() != null ? request.role() : "DEVELOPER").vcsKey(request.vcsKey())
             .redmineKey(request.redmineKey()).avatarUrl(request.avatarUrl()).build();
 
         final User savedUser = userRepository.save(user);

@@ -7,7 +7,7 @@ public record UserDTO(
     String firstName,
     String lastName,
     String role,
-    String gitlabKey,
+    String vcsKey,
     String redmineKey,
     String createdAt,
     String avatarUrl
@@ -18,7 +18,7 @@ public record UserDTO(
             user.getFirstName(),
             user.getLastName(),
             user.getRole(),
-            user.getGitlabKey(),
+            user.getVcsKey(),
             user.getRedmineKey(),
             user.getCreatedAt() != null ? user.getCreatedAt().toString() : Instant.now().toString(),
             user.getAvatarUrl()

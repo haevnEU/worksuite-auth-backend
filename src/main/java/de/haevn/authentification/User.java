@@ -36,8 +36,8 @@ public class User {
     @Column(name = "role", nullable = false)
     private String role;
 
-    @Column(name = "gitlab_key")
-    private String gitlabKey;
+    @Column(name = "vcs_key")
+    private String vcsKey;
 
     @Column(name = "redmine_key")
     private String redmineKey;
