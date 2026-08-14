@@ -3,6 +3,8 @@ package de.haevn.authentification;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +25,16 @@ public class UserService {
                 "Username '" + request.username() + "' ist bereits vergeben.");
         }
         final User user =
-            User.builder().username(request.username()).passwordHash(passwordEncoder.encode(request.password()))
-                .firstName(request.firstname()).lastName(request.lastName())
-                .role(request.role() != null ? request.role() : "DEVELOPER").vcsKey(request.vcsKey())
-                .redmineKey(request.redmineKey()).avatarUrl(request.avatarUrl()).build();
+            User.builder()
+                .username(request.username())
+                .passwordHash(passwordEncoder.encode(request.password()))
+                .firstName(request.firstname())
+                .lastName(request.lastName())
+                .role(request.role() != null ? request.role() : "DEVELOPER")
+                .vcsKey(request.vcsKey())
+                .redmineKey(request.redmineKey())
+                .avatarUrl(request.avatarUrl())
+                .build();
 
         final User savedUser = userRepository.save(user);
         return UserDTO.fromEntity(savedUser);
@@ -58,5 +66,19 @@ public class UserService {
 
         final String token = jwtService.generateToken(user);
         return new AuthResponse(token, UserDTO.fromEntity(user));
+    }
+
+    @Transactional(readOnly = true)
+    public User getCurrentUser() {
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No authenticated user in context.");
+        }
+
+        final String username = authentication.getName();
+
+        return userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Authenticated user not found: " + username));
     }
 }
