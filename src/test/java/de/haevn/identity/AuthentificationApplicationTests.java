@@ -1,4 +1,4 @@
-package de.haevn.authentification;
+package de.haevn.identity;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,5 +1,7 @@
-package de.haevn.authentification;
+package de.haevn.identity.config;
 
+import de.haevn.identity.common.JwtService;
+import de.haevn.identity.user.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,18 +19,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserRepository userRepository; // 👈 UserRepository statt UserDetailsService löst den Zirkel auf
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
-        @NonNull final HttpServletRequest request,
-        @NonNull final HttpServletResponse response,
-        @NonNull final FilterChain filterChain
+        final HttpServletRequest request,
+        final HttpServletResponse response,
+        final FilterChain filterChain
     ) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");

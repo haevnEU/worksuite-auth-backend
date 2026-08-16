@@ -1,5 +1,5 @@
-package de.haevn.authentification.license;
-import de.haevn.authentification.RestApiController;
+package de.haevn.identity.license;
+import de.haevn.identity.common.RestApiController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

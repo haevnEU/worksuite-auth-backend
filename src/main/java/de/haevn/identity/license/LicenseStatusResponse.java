@@ -1,4 +1,4 @@
-package de.haevn.authentification.license;
+package de.haevn.identity.license;
 
 import java.time.Instant;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package de.haevn.authentification;
+package de.haevn.identity.user;
 
 import java.util.Optional;
 import java.util.UUID;

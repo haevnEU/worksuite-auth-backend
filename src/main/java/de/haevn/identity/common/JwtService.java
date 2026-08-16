@@ -1,5 +1,6 @@
-package de.haevn.authentification;
+package de.haevn.identity.common;
 
+import de.haevn.identity.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -30,34 +31,19 @@ public class JwtService {
         final Date now = new Date();
         final Date expiryDate = new Date(now.getTime() + expirationMs);
 
-        return Jwts.builder()
-            .subject(user.getId().toString())
-            .claim("username", user.getUsername())
-            .claim("role", user.getRole())
-            .issuedAt(now)
-            .expiration(expiryDate)
-            .signWith(getSigningKey())
-            .compact();
+        return Jwts.builder().subject(user.getId().toString()).claim("username", user.getUsername())
+            .claim("role", user.getRole()).issuedAt(now).expiration(expiryDate).signWith(getSigningKey()).compact();
     }
 
-    /**
-     * Liest den Benutzernamen aus dem Claim "username" aus.
-     */
     public String extractUsername(final String jwt) {
         return extractClaim(jwt, claims -> claims.get("username", String.class));
     }
 
-    /**
-     * Liest die User-ID aus dem Subject aus.
-     */
     public UUID extractUserId(final String jwt) {
         final String subject = extractClaim(jwt, Claims::getSubject);
         return subject != null ? UUID.fromString(subject) : null;
     }
 
-    /**
-     * Prüft, ob der Token gültig ist (Signatur korrekt, Name übereinstimmend, nicht abgelaufen).
-     */
     public boolean isTokenValid(final String jwt, final UserDetails userDetails) {
         try {
             final String username = extractUsername(jwt);
@@ -78,10 +64,6 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(final String jwt) {
-        return Jwts.parser()
-            .verifyWith(getSigningKey())
-            .build()
-            .parseSignedClaims(jwt)
-            .getPayload();
+        return Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(jwt).getPayload();
     }
 }

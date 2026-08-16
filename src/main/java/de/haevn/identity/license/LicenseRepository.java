@@ -1,4 +1,4 @@
-package de.haevn.authentification.license;
+package de.haevn.identity.license;
 
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

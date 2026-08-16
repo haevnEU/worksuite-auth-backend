@@ -1,5 +1,7 @@
-package de.haevn.authentification;
+package de.haevn.identity.user;
 
+import de.haevn.identity.auth.AuthResponse;
+import de.haevn.identity.common.RestApiController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

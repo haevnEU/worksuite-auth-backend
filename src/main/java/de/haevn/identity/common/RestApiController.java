@@ -1,4 +1,4 @@
-package de.haevn.authentification;
+package de.haevn.identity.common;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

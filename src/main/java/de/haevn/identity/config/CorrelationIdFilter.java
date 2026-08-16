@@ -1,4 +1,4 @@
-package de.haevn.authentification;
+package de.haevn.identity.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

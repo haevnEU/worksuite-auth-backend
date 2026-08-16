@@ -1,4 +1,4 @@
-package de.haevn.authentification.license;
+package de.haevn.identity.license;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

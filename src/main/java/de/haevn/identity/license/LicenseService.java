@@ -1,6 +1,6 @@
-package de.haevn.authentification.license;
+package de.haevn.identity.license;
 
-import de.haevn.authentification.UserService;
+import de.haevn.identity.user.UserService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import java.time.Instant;
