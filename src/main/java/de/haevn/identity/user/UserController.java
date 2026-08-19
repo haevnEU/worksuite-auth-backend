@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -62,6 +63,46 @@ public class UserController {
         final AuthResponse response = userService.login(request);
         return ResponseEntity.ok(response);
     }
+    /**
+     * Re-authenticates an existing user via their unique user identifier.
+     * <p>
+     * Validates the provided credentials against the database and issues a fresh JWT access token
+     * upon successful verification.
+     * </p>
+     *
+     * @param request the {@link ReauthDTO} containing the user ID and password
+     * @return a {@link ResponseEntity} containing the {@link AuthResponse} with the JWT token and user profile
+     */
+    @Operation(
+        summary = "Re-authenticate by user ID",
+        description = "Authenticates a user using their UUID and password to issue a new JWT access token."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "User successfully authenticated. Fresh token and user profile returned.",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = AuthResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Validation failed for the request payload (e.g., missing ID or empty password).",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Invalid credentials. User ID does not exist or password mismatch.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+        )
+    })
+    @PostMapping("/login/id")
+    public ResponseEntity<AuthResponse> loginById(@Valid @RequestBody final ReauthDTO request) {
+        final AuthResponse response = userService.loginById(request);
+        return ResponseEntity.ok(response);
+    }
+
 
     /**
      * Verifies the existing password and sets a newly specified password for the target user.

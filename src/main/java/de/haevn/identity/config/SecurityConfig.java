@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -30,23 +31,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CorrelationIdFilter correlationIdFilter;
 
-    /**
-     * Creates a {@link PasswordEncoder} bean utilizing the BCrypt strong hashing algorithm.
-     *
-     * @return a {@link BCryptPasswordEncoder} instance
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Configures the main {@link SecurityFilterChain} for HTTP security.
-     *
-     * @param http the {@link HttpSecurity} to configure
-     * @return the assembled {@link SecurityFilterChain}
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) {
         http.cors(Customizer.withDefaults())
@@ -56,7 +47,7 @@ public class SecurityConfig {
                 // Allow unauthenticated CORS preflight requests
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // Allow Swagger UI, OpenAPI specifications, resources, and WebJars
+                // Allow Swagger UI & OpenAPI (mit und ohne Context-Pfad)
                 .requestMatchers(
                     "/swagger-ui.html",
                     "/swagger-ui/**",
@@ -70,9 +61,13 @@ public class SecurityConfig {
                     "/api/v1/user-service/v3/api-docs/**"
                 ).permitAll()
 
-                // Allow public authentication endpoints, health probes, and static assets
+                // Public Authentication Endpoints
                 .requestMatchers(
+                    "/login",
+                    "/login/id",
+                    "/register",
                     "/api/v1/user-service/login",
+                    "/api/v1/user-service/login/id",
                     "/api/v1/user-service/register",
                     "/actuator/health",
                     "/css/**",
@@ -81,21 +76,18 @@ public class SecurityConfig {
                     "/favicon.ico"
                 ).permitAll()
 
-                // Require valid authentication for license management and all remaining endpoints
-                .requestMatchers("/api/v1/user-service/license/**", "/license/plans/**").authenticated()
+                // Require valid authentication for license management and remaining routes
+                .requestMatchers("/api/v1/user-service/license/**", "/license/plans/**", "/license/**").authenticated()
                 .anyRequest().authenticated()
             )
-            // Ensure JWT extraction and validation occurs prior to standard username/password processing
+            // 1. CorrelationIdFilter ganz an den Anfang der Kette setzen
+            .addFilterBefore(correlationIdFilter, HeaderWriterFilter.class)
+            // 2. JwtAuthenticationFilter vor die Standard-Authentifizierung setzen
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    /**
-     * Configures CORS defaults allowing cross-origin preflight requests and token header forwarding.
-     *
-     * @return the assembled {@link CorsConfigurationSource}
-     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();

@@ -3,6 +3,7 @@ package de.haevn.identity.user;
 import de.haevn.identity.auth.AuthResponse;
 import de.haevn.identity.common.JwtService;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -123,5 +124,29 @@ public class UserService {
     public User getByUsername(final String username) {
         return userRepository.findByUsername(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + username));
+    }
+
+    /**
+     * Authenticates a user by their unique identifier ({@link UUID}) and password.
+     * <p>
+     * This method is primarily used for re-authentication scenarios (e.g., renewing an expired session
+     * or confirming elevated security actions) without requiring the user to re-enter their username.
+     * If authentication succeeds, a new JWT access token is generated and returned alongside the user data.
+     * </p>
+     *
+     * @param request the {@link ReauthDTO} containing the user's ID and raw password; must not be null
+     * @return an {@link AuthResponse} containing the newly generated JWT token and the authenticated {@link UserDTO}
+     * @throws org.springframework.web.server.ResponseStatusException if the user is not found or the provided password does not match (HTTP 401 UNAUTHORIZED)
+     */
+    public AuthResponse loginById(final ReauthDTO request) {
+        final User user = userRepository.findById(request.userId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials."));
+
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials.");
+        }
+
+        final String token = jwtService.generateToken(user);
+        return new AuthResponse(token, UserDTO.fromEntity(user));
     }
 }
