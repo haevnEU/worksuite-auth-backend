@@ -6,10 +6,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,6 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * Inspects the authorization header or query parameters for a JWT and authenticates the principal.
+     * Rejects invalid/expired tokens immediately with HTTP 401 Unauthorized.
      *
      * @param request the current {@link HttpServletRequest}
      * @param response the current {@link HttpServletResponse}
@@ -40,6 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(final @NonNull HttpServletRequest request,
         final @NonNull HttpServletResponse response, final @NonNull FilterChain filterChain)
         throws ServletException, IOException {
+
         String jwt = extractTokenFromHeader(request);
 
         // Fallback for direct browser URL navigation where tokens might be passed via query params
@@ -51,7 +55,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        if (jwt != null && !jwt.isBlank() && jwtService.isTokenValid(jwt)) {
+        // Token vorhanden -> Validiere Token
+        if (jwt != null && !jwt.isBlank()) {
+            if (!jwtService.isTokenValid(jwt)) {
+                sendUnauthorizedError(response, "Invalid or expired JWT token");
+                return;
+            }
+
             final String username = jwtService.extractUsername(jwt);
             final List<GrantedAuthority> authorities = jwtService.extractAuthorities(jwt);
 
@@ -62,6 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
+        // Kein Token vorhanden (z. B. Public Endpoints) oder Token war gültig -> Kette fortsetzen
         filterChain.doFilter(request, response);
     }
 
@@ -77,5 +88,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return authHeader.substring(7).trim();
         }
         return null;
+    }
+
+    /**
+     * Writes a standardized HTTP 401 Unauthorized response and terminates filter processing.
+     *
+     * @param response the current {@link HttpServletResponse}
+     * @param message error message describing the authentication failure
+     * @throws IOException if writing response output fails
+     */
+    private void sendUnauthorizedError(final HttpServletResponse response, final String message) throws IOException {
+        SecurityContextHolder.clearContext();
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer error=\"invalid_token\"");
+        response.getWriter().write(String.format("{\"error\": \"Unauthorized\", \"message\": \"%s\"}", message));
     }
 }
